@@ -1,0 +1,1689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Word Deck — Foundation English</title>
+<style>
+  :root{
+    --ink:#1b2a41;
+    --paper:#faf6ec;
+    --card:#fffdf7;
+    --accent:#c98a2c;
+    --accent-2:#4f7a63;
+    --line: rgba(27,42,65,0.15);
+    --danger:#b04a3f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    background-image:linear-gradient(var(--line) 1px, transparent 1px);
+    background-size: 100% 2.1rem;
+    color:var(--ink);
+    font-family: 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
+    min-height:100vh;
+  }
+  header.top{
+    padding: 2.2rem 1.5rem 1.2rem;
+    max-width: 820px;
+    margin: 0 auto;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    border-bottom: 2px solid var(--ink);
+  }
+  header.top h1{ font-size: 1.9rem; margin:0; font-weight:700; }
+  header.top .sub{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.85rem; color: var(--accent-2); margin-top: 0.2rem;
+  }
+  #adminToggle{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.8rem; background:none; border: 1px solid var(--ink); color: var(--ink);
+    padding: 0.4rem 0.8rem; border-radius: 3px; cursor:pointer;
+  }
+  #adminToggle:hover{ background: var(--ink); color: var(--paper); }
+
+  main{ max-width: 820px; margin: 0 auto; padding: 1.8rem 1.5rem 4rem; }
+
+  .explain-box{
+    background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--accent);
+    border-radius: 4px; padding: 1.1rem 1.2rem; margin-bottom: 2.4rem;
+  }
+  .explain-box h2{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.78rem; color: var(--accent-2); margin: 0 0 0.6rem; font-weight: 600;
+  }
+  .explain-row{ display:flex; gap: 0.5rem; flex-wrap:wrap; }
+  .explain-row input{
+    flex:1; min-width:160px; font-family: inherit; font-size: 1.05rem;
+    padding: 0.5rem 0.7rem; border: 1px solid var(--line); border-radius: 3px; background: #fff;
+  }
+  .explain-row button{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.85rem; background: var(--ink); color: var(--paper); border: none;
+    padding: 0.5rem 1.1rem; border-radius: 3px; cursor: pointer;
+  }
+  .explain-row button:hover{ background: var(--accent-2); }
+  #explainResult{ margin-top: 0.9rem; font-size: 0.98rem; line-height: 1.5; }
+  #explainResult .word{ font-weight:700; font-size: 1.15rem; }
+  #explainResult .pos{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-style: italic; color: var(--accent-2); font-size: 0.85rem;
+  }
+  #explainResult .example{ color: #6b6558; font-style: italic; }
+  #explainResult .addBtn{
+    margin-top:0.5rem; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.8rem; background:none; border: 1px solid var(--accent-2); color: var(--accent-2);
+    padding: 0.3rem 0.7rem; border-radius: 3px; cursor:pointer;
+  }
+  #explainResult .addBtn:hover{ background: var(--accent-2); color:#fff; }
+
+  details.aiSettings{ margin-top:0.9rem; }
+  details.aiSettings summary{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    font-size:0.78rem; color:#8a8578; cursor:pointer;
+  }
+  .note{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.78rem; color:#8a8578; margin-top: 0.8rem; line-height:1.5;
+  }
+
+  .crumbs{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.85rem; color: var(--accent-2); margin-bottom: 1rem;
+  }
+  .crumbs button{
+    background:none; border:none; color: var(--accent-2); cursor:pointer;
+    font-family: inherit; font-size: inherit; padding:0; text-decoration: underline;
+  }
+  .viewTitle{ font-size: 1.4rem; font-weight:700; margin: 0 0 1rem; }
+
+  .tiles{ display:grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+  @media (max-width: 560px){ .tiles{ grid-template-columns: 1fr; } }
+  .tile{
+    background: var(--card); border: 1px solid var(--line); border-radius: 4px;
+    padding: 1rem 1.1rem; cursor:pointer; text-align:left;
+  }
+  .tile:hover{ border-color: var(--accent); }
+  .tile .t{ font-weight:700; font-size: 1.05rem; }
+  .tile .m{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.78rem; color: var(--accent-2); margin-top:0.3rem;
+  }
+
+  .deck{ display:grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+  @media (max-width: 560px){ .deck{ grid-template-columns: 1fr; } }
+  .cardw{
+    position:relative; background: var(--card); border: 1px solid var(--line); border-radius: 4px;
+    padding: 0.9rem 1rem 0.9rem 1.4rem;
+  }
+  .cardw::before{
+    content:""; position:absolute; left:0; top:0.5rem; bottom:0.5rem; width:3px;
+    background: var(--accent); border-radius: 2px;
+  }
+  .cardw .w{ font-weight:700; font-size: 1.08rem; }
+  .cardw .type{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-style: italic; color: var(--accent-2); font-size: 0.78rem; margin-left: 0.4rem;
+  }
+  .cardw .m{ font-size: 0.92rem; margin-top: 0.3rem; color:#3a3a34; }
+  .cardw .ex{ font-size: 0.85rem; margin-top: 0.3rem; color:#6b6558; font-style: italic; }
+  .cardw .rm{
+    position:absolute; top:0.5rem; right:0.6rem; border:none; background:none; cursor:pointer;
+    color: var(--danger); font-size: 0.75rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; display:none;
+  }
+  .cardw:hover .rm{ display: inline; }
+  .empty{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color:#8a8578; font-size:0.9rem;
+  }
+
+  #adminPanel{ margin-top: 2.4rem; padding-top: 1.6rem; border-top: 2px dashed var(--line); display:none; }
+  #adminPanel h2{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.85rem; color: var(--ink); margin-bottom: 0.8rem;
+  }
+  .addRow{ display:flex; gap:0.5rem; flex-wrap:wrap; margin-bottom:1rem; }
+  .addRow input, .addRow select{
+    font-family: inherit; font-size: 0.95rem; padding: 0.45rem 0.6rem;
+    border: 1px solid var(--line); border-radius: 3px;
+  }
+  .addRow input.word{ flex: 1 1 110px; }
+  .addRow input.type{ flex: 0 1 90px; }
+  .addRow input.meaning{ flex: 2 1 200px; }
+  .addRow input.example{ flex: 2 1 200px; }
+  .addRow select{ flex: 1 1 160px; }
+  .addRow button{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.85rem; background: var(--accent-2); color: #fff; border: none;
+    padding: 0.45rem 1rem; border-radius: 3px; cursor:pointer;
+  }
+  .addRow .auto{ background:none; border: 1px solid var(--accent-2); color: var(--accent-2); }
+  .ghostBtn{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.8rem; background:none; border: 1px solid var(--ink);
+    padding: 0.4rem 0.9rem; border-radius: 3px; cursor:pointer; margin-right: 0.6rem; margin-top:0.4rem;
+  }
+
+  #loginOverlay{
+    position:fixed; inset:0; background: rgba(27,42,65,0.55);
+    display:none; align-items:center; justify-content:center; z-index: 50;
+  }
+  #loginBox{
+    background: var(--card); padding: 1.8rem 1.8rem 1.5rem; border-radius: 6px; width: 280px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  }
+  #loginBox h3{ margin-top:0; font-size:1.1rem; }
+  #loginBox input{
+    width:100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 0.95rem; padding: 0.5rem 0.6rem; margin-bottom: 0.6rem;
+    border: 1px solid var(--line); border-radius: 3px;
+  }
+  #loginBox button{
+    width:100%; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--ink); color: var(--paper); border:none; padding: 0.55rem;
+    border-radius:3px; cursor:pointer; font-size:0.9rem;
+  }
+  #loginError{
+    color: var(--danger); font-size:0.8rem;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 1.1rem;
+  }
+  #loginClose{
+    display:block; text-align:right; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size:0.8rem; color:#8a8578; background:none; border:none; cursor:pointer;
+    margin-bottom:0.4rem; margin-left:auto;
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div>
+    <h1>Word Deck</h1>
+    <div class="sub">Foundation English — build your class vocabulary together</div>
+  </div>
+  <button id="adminToggle">Admin</button>
+</header>
+
+<main>
+
+  <section class="explain-box">
+    <h2>Don't know a word? Ask here</h2>
+    <div class="explain-row">
+      <input type="text" id="explainInput" placeholder="Type any English word…" onkeydown="if(event.key==='Enter') explainWord()">
+      <button onclick="explainWord()">Explain</button>
+    </div>
+    <div id="explainResult"></div>
+    <details class="aiSettings">
+      <summary>AI explanations (optional, needs your own Groq API key)</summary>
+      <div class="explain-row" style="margin-top:0.6rem;">
+        <input type="password" id="aiKey" placeholder="your Groq API key (starts with gsk_)">
+        <button onclick="saveAiSettings()">Save</button>
+      </div>
+      <div id="aiStatus" class="note"></div>
+      <p class="note">
+        Get a free key at console.groq.com/keys (your own account, your own usage — Groq has a
+        generous free tier). It's saved only in <em>your</em> browser and used only for your own
+        lookups. Leave this blank and Explain still works using a free dictionary lookup.
+      </p>
+    </details>
+  </section>
+
+  <div class="crumbs" id="crumbs"></div>
+  <div class="viewTitle" id="viewTitle"></div>
+  <div id="content"></div>
+
+  <section id="adminPanel">
+    <h2>Manage the deck (Muhammed only)</h2>
+    <div class="addRow">
+      <select id="pickBook"></select>
+      <select id="pickUnit"></select>
+      <input type="text" id="newUnitTitle" placeholder="or type a new unit title">
+      <button class="auto" onclick="createUnit()">Create unit</button>
+    </div>
+    <div class="addRow">
+      <input type="text" class="word" id="newWord" placeholder="word">
+      <input type="text" class="type" id="newType" placeholder="type (noun…)">
+      <input type="text" class="meaning" id="newMeaning" placeholder="meaning">
+      <input type="text" class="example" id="newExample" placeholder="example sentence">
+      <button class="auto" onclick="autoFillMeaning()">Auto-fill</button>
+      <button onclick="addWord()">Add word</button>
+    </div>
+
+    <button class="ghostBtn" onclick="exportDeck()">Download updated words.json</button>
+    <button class="ghostBtn" onclick="reloadFromServer()">Reset to this page's built-in words (discard local edits)</button>
+    <button class="ghostBtn" onclick="logout()">Log out</button>
+
+    <h2 style="margin-top:1.6rem;">Auto-publish to GitHub (optional)</h2>
+    <div class="addRow">
+      <input type="password" id="ghToken" placeholder="fine-grained token" style="flex:1 1 260px;">
+      <button class="auto" onclick="saveGhSettings()">Save settings</button>
+    </div>
+    <details style="margin-bottom:0.8rem;">
+      <summary style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:0.8rem;color:#8a8578;cursor:pointer;">Advanced (only if auto-detect gets it wrong)</summary>
+      <div class="addRow" style="margin-top:0.6rem;">
+        <input type="text" id="ghOwner" placeholder="GitHub username (auto-detected)">
+        <input type="text" id="ghRepo" placeholder="repo name (auto-detected)">
+        <input type="text" id="ghBranch" placeholder="branch (default: main)">
+        <input type="text" id="ghFile" placeholder="HTML file name (default: vocab-builder.html)">
+      </div>
+    </details>
+    <button class="ghostBtn" onclick="publishToGithub()">Publish now → live for everyone</button>
+    <button class="ghostBtn" onclick="clearGhSettings()">Forget saved token</button>
+    <div id="ghStatus" class="note"></div>
+    <p class="note">
+      Use a fine-grained GitHub token scoped to <em>only this one repo</em>, with "Contents:
+      Read and write" permission and nothing else. Saved only in this browser — never in the
+      file itself. Never paste it anywhere except this field. Publishing rewrites the word list
+      inside <strong>this same HTML file</strong> in your repo (default name
+      <code>vocab-builder.html</code> — set the real name under Advanced if you renamed it,
+      e.g. to <code>index.html</code>).
+    </p>
+  </section>
+
+</main>
+
+<div id="loginOverlay">
+  <div id="loginBox">
+    <button id="loginClose" onclick="closeLogin()">✕</button>
+    <h3>Admin login</h3>
+    <input type="text" id="loginUser" placeholder="Username">
+    <input type="password" id="loginPass" placeholder="Password" onkeydown="if(event.key==='Enter') tryLogin()">
+    <div id="loginError"></div>
+    <button onclick="tryLogin()">Log in</button>
+  </div>
+</div>
+
+<script>
+  const ADMIN_USER = "Muhammed";
+  const ADMIN_PASS = "2009"; // client-side only — fine for a classroom project, not real security.
+
+  const BOOKS_DATA = /* BOOKS_DATA_START */ [
+  {
+    "id": "sfs-rw",
+    "title": "Skills for Success: READING & WRITING",
+    "units": [
+      {
+        "title": "Unit 1: First Impressions & Personal Qualities",
+        "words": [
+          {
+            "word": "accomplishment",
+            "type": "noun",
+            "meaning": "Something good or impressive that you complete after working hard.",
+            "example": "Winning the science fair was a big accomplishment."
+          },
+          {
+            "word": "authentic",
+            "type": "adj",
+            "meaning": "Real, genuine, and original; not fake or copied.",
+            "example": "This restaurant serves authentic Italian pizza."
+          },
+          {
+            "word": "appreciate",
+            "type": "verb",
+            "meaning": "To be grateful for something or to see its value.",
+            "example": "I appreciate your help with my homework."
+          },
+          {
+            "word": "consider",
+            "type": "verb",
+            "meaning": "To think carefully about something before deciding.",
+            "example": "Please consider my advice before you buy that car."
+          },
+          {
+            "word": "confidence",
+            "type": "noun",
+            "meaning": "The belief that you can do things well and succeed.",
+            "example": "She spoke in front of the class with great confidence."
+          },
+          {
+            "word": "demonstrate",
+            "type": "verb",
+            "meaning": "To show or explain clearly how to do something.",
+            "example": "The teacher will demonstrate how to solve the math problem."
+          },
+          {
+            "word": "effective",
+            "type": "adj",
+            "meaning": "Working well and producing the result you want.",
+            "example": "Studying every day is an effective way to learn."
+          },
+          {
+            "word": "expect",
+            "type": "verb",
+            "meaning": "To think that something will happen in the future.",
+            "example": "We expect the rain to stop soon."
+          },
+          {
+            "word": "impress",
+            "type": "verb",
+            "meaning": "To make someone feel admiration and respect.",
+            "example": "He wanted to impress his new manager on his first day."
+          },
+          {
+            "word": "lead to",
+            "type": "verb phrase",
+            "meaning": "To cause or result in something.",
+            "example": "Hard work can lead to great success."
+          },
+          {
+            "word": "maintain",
+            "type": "verb",
+            "meaning": "To keep something going or keep it in good condition.",
+            "example": "It is important to maintain a healthy diet."
+          },
+          {
+            "word": "offensive",
+            "type": "adj",
+            "meaning": "Rude, upset, or likely to make someone angry.",
+            "example": "Making fun of people is offensive and unkind."
+          },
+          {
+            "word": "professional",
+            "type": "adj / noun",
+            "meaning": "Doing work with high skill, politeness, and correct behavior.",
+            "example": "She always acts in a very professional manner at work."
+          },
+          {
+            "word": "punctual",
+            "type": "adj",
+            "meaning": "Arriving or happening right on time; not late.",
+            "example": "Being punctual shows respect for other people's time."
+          },
+          {
+            "word": "research",
+            "type": "noun / verb",
+            "meaning": "A careful study to find new information or facts.",
+            "example": "They are doing research to learn more about ocean life."
+          },
+          {
+            "word": "responsible",
+            "type": "adj",
+            "meaning": "Treated as trusted to do what is right; taking care of duties.",
+            "example": "He is a responsible boy who cleans his room every day."
+          },
+          {
+            "word": "select",
+            "type": "verb",
+            "meaning": "To choose someone or something from a group.",
+            "example": "Please select the dress you like best."
+          },
+          {
+            "word": "slang",
+            "type": "noun",
+            "meaning": "Informal words and phrases used in casual conversation.",
+            "example": "'Cool' and 'awesome' are examples of common English slang."
+          },
+          {
+            "word": "stranger",
+            "type": "noun",
+            "meaning": "A person that you do not know.",
+            "example": "Never take food or candy from a stranger."
+          },
+          {
+            "word": "weakness",
+            "type": "noun",
+            "meaning": "A point or skill that is not strong or good.",
+            "example": "Her main weakness is that she gets nervous when speaking."
+          }
+        ]
+      },
+      {
+        "title": "Unit 2: Styles, Behavior & Choices",
+        "words": [
+          {
+            "word": "arrange",
+            "type": "verb",
+            "meaning": "To put things in a clear, neat, or special order.",
+            "example": "She decided to arrange the flowers in a pretty vase."
+          },
+          {
+            "word": "artistic",
+            "type": "adj",
+            "meaning": "Good at drawing, painting, or creating beautiful art.",
+            "example": "My sister is very artistic and loves to paint pictures."
+          },
+          {
+            "word": "at risk",
+            "type": "phrase",
+            "meaning": "In a dangerous situation where harm might happen.",
+            "example": "Without a coat, you are at risk of catching a cold."
+          },
+          {
+            "word": "balanced",
+            "type": "adj",
+            "meaning": "Having equal parts; healthy and stable without excess.",
+            "example": "A balanced meal includes vegetables, protein, and grains."
+          },
+          {
+            "word": "be made up of",
+            "type": "verb phrase",
+            "meaning": "To be formed, built, or combined from smaller parts.",
+            "example": "A water molecule is made up of hydrogen and oxygen."
+          },
+          {
+            "word": "be willing to",
+            "type": "verb phrase",
+            "meaning": "Ready, happy, and agreeing to do something.",
+            "example": "He is willing to help us move the heavy furniture."
+          },
+          {
+            "word": "identical",
+            "type": "adj",
+            "meaning": "Exactly the same in every single way.",
+            "example": "The twins wore identical shirts to school."
+          },
+          {
+            "word": "identify",
+            "type": "verb",
+            "meaning": "To recognize and name who or what something is.",
+            "example": "Can you identify the bird sitting in that tree?"
+          },
+          {
+            "word": "influence",
+            "type": "verb / noun",
+            "meaning": "To affect or change how someone acts, thinks, or develops.",
+            "example": "Parents have a strong influence on their children."
+          },
+          {
+            "word": "in terms of",
+            "type": "phrase",
+            "meaning": "Looking at a subject from one specific viewpoint.",
+            "example": "In terms of price, this phone is much cheaper."
+          },
+          {
+            "word": "likely",
+            "type": "adj / adv",
+            "meaning": "Expected to happen; probable.",
+            "example": "It is likely to rain this afternoon, so take an umbrella."
+          },
+          {
+            "word": "method",
+            "type": "noun",
+            "meaning": "A systematic way or process of doing something.",
+            "example": "Flashcards are a popular method for studying words."
+          },
+          {
+            "word": "occasion",
+            "type": "noun",
+            "meaning": "A special event, ceremony, or specific time.",
+            "example": "A wedding is a joyful family occasion."
+          },
+          {
+            "word": "principle",
+            "type": "noun",
+            "meaning": "A basic truth, rule, or belief that guides behavior.",
+            "example": "Honesty is an important principle in friendship."
+          },
+          {
+            "word": "recognize",
+            "type": "verb",
+            "meaning": "To know who or what someone is because you saw them before.",
+            "example": "I didn't recognize him because he cut his hair short."
+          },
+          {
+            "word": "sensitive",
+            "type": "adj",
+            "meaning": "Easily hurt, affected, or tuned into feelings.",
+            "example": "Be careful with what you say; she is very sensitive."
+          },
+          {
+            "word": "status symbol",
+            "type": "noun",
+            "meaning": "A possession that shows high social position or wealth.",
+            "example": "A luxury sports car is often seen as a status symbol."
+          },
+          {
+            "word": "system",
+            "type": "noun",
+            "meaning": "A group of connected parts or rules working together.",
+            "example": "The school library has a very organized filing system."
+          },
+          {
+            "word": "typically",
+            "type": "adv",
+            "meaning": "Usually or normally in standard conditions.",
+            "example": "We typically eat dinner together around seven o'clock."
+          }
+        ]
+      },
+      {
+        "title": "Unit 3: Technology, Data & Change",
+        "words": [
+          {
+            "word": "adapt",
+            "type": "verb",
+            "meaning": "To change habits or behavior to fit a new situation.",
+            "example": "Animals adapt to survive in cold winter weather."
+          },
+          {
+            "word": "data",
+            "type": "noun",
+            "meaning": "Information, facts, or numbers collected for study.",
+            "example": "Scientists collect data during an experiment."
+          },
+          {
+            "word": "digital",
+            "type": "adj",
+            "meaning": "Using computer technology, screens, or electronic signals.",
+            "example": "I prefer reading digital books on my tablet device."
+          },
+          {
+            "word": "discover",
+            "type": "verb",
+            "meaning": "To find or learn something new for the first time.",
+            "example": "Explorers hope to discover new islands in the ocean."
+          },
+          {
+            "word": "feedback",
+            "type": "noun",
+            "meaning": "Advice or opinions given about how well someone did work.",
+            "example": "The teacher gave me helpful feedback on my essay."
+          },
+          {
+            "word": "global",
+            "type": "adj",
+            "meaning": "Relating to the whole world, all countries together.",
+            "example": "Global warming affects weather patterns everywhere."
+          },
+          {
+            "word": "in favor of",
+            "type": "phrase",
+            "meaning": "Supporting, agreeing with, or preferring an idea.",
+            "example": "Most students are in favor of having a longer weekend."
+          },
+          {
+            "word": "interactive",
+            "type": "adj",
+            "meaning": "Allowing users or people to participate and talk back.",
+            "example": "Video games are interactive entertainment."
+          },
+          {
+            "word": "limitation",
+            "type": "noun",
+            "meaning": "A rule, weakness, or point that restricts what can be done.",
+            "example": "Knowing your limitation helps you avoid big mistakes."
+          },
+          {
+            "word": "manufacturer",
+            "type": "noun",
+            "meaning": "A company or factory that makes goods and products.",
+            "example": "This company is a leading manufacturer of cars."
+          },
+          {
+            "word": "monitor",
+            "type": "verb / noun",
+            "meaning": "To watch, check, or track something carefully over time.",
+            "example": "Doctors monitor the patient's heart rate continuously."
+          },
+          {
+            "word": "obey",
+            "type": "verb",
+            "meaning": "To do what a rule, law, or person tells you to do.",
+            "example": "Drivers must obey traffic light rules at all times."
+          },
+          {
+            "word": "obstacle",
+            "type": "noun",
+            "meaning": "Something that blocks your way or makes a goal hard.",
+            "example": "Heavy traffic was a major obstacle to reaching work on time."
+          },
+          {
+            "word": "occur",
+            "type": "verb",
+            "meaning": "To happen or take place.",
+            "example": "Earthquakes often occur near ocean fault lines."
+          },
+          {
+            "word": "reliable",
+            "type": "adj",
+            "meaning": "Able to be trusted and depended on to work well.",
+            "example": "My car is old, but it is still very reliable."
+          },
+          {
+            "word": "respond",
+            "type": "verb",
+            "meaning": "To answer, reply, or react to something said or done.",
+            "example": "Please respond to my text message when you are free."
+          },
+          {
+            "word": "revolutionize",
+            "type": "verb",
+            "meaning": "To change something completely and dramatically.",
+            "example": "Smartphones helped revolutionize how people communicate."
+          },
+          {
+            "word": "sense",
+            "type": "noun / verb",
+            "meaning": "A feeling, understanding, or ability to perceive things.",
+            "example": "Dogs have a sharp sense of smell."
+          },
+          {
+            "word": "the benefits of",
+            "type": "phrase",
+            "meaning": "The positive advantages or good results gained from something.",
+            "example": "Eating fruits brings many health benefits to your body."
+          }
+        ]
+      },
+      {
+        "title": "Unit 4: Communication, Media & Impact",
+        "words": [
+          {
+            "word": "accurate",
+            "type": "adj",
+            "meaning": "Correct, exact, and without any mistakes.",
+            "example": "Make sure your answers on the exam are accurate."
+          },
+          {
+            "word": "acknowledge",
+            "type": "verb",
+            "meaning": "To accept or admit that something is true or real.",
+            "example": "He refused to acknowledge that he had made a mistake."
+          },
+          {
+            "word": "annoying",
+            "type": "adj",
+            "meaning": "Bothering you slightly and making you feel irritated.",
+            "example": "Loud construction noise outside can be very annoying."
+          },
+          {
+            "word": "annual",
+            "type": "adj",
+            "meaning": "Happening once every year.",
+            "example": "Our family goes on an annual summer vacation in July."
+          },
+          {
+            "word": "broadcasting",
+            "type": "noun",
+            "meaning": "Sending out television or radio shows to the public.",
+            "example": "The news channel is broadcasting live from the stadium."
+          },
+          {
+            "word": "donation",
+            "type": "noun",
+            "meaning": "Money, clothes, or goods given freely to help others.",
+            "example": "They made a generous financial donation to the hospital."
+          },
+          {
+            "word": "entertain",
+            "type": "verb",
+            "meaning": "To amuse people and keep them happy or interested.",
+            "example": "Clowns entertain children with fun magic tricks."
+          },
+          {
+            "word": "exposure",
+            "type": "noun",
+            "meaning": "The state of being seen, experienced, or made public.",
+            "example": "Social media gives young artists great public exposure."
+          },
+          {
+            "word": "factor",
+            "type": "noun",
+            "meaning": "One of several things that cause or influence a situation.",
+            "example": "Hard work is a major factor in achieving success."
+          },
+          {
+            "word": "impact",
+            "type": "noun / verb",
+            "meaning": "A strong effect or powerful impression on something.",
+            "example": "Technology has a big impact on modern daily life."
+          },
+          {
+            "word": "imply",
+            "type": "verb",
+            "meaning": "To suggest or express an idea without saying it directly.",
+            "example": "Her smile seemed to imply that she agreed with us."
+          },
+          {
+            "word": "memorable",
+            "type": "adj",
+            "meaning": "Easy to remember because it was special or exciting.",
+            "example": "Our trip to the mountains was a memorable experience."
+          },
+          {
+            "word": "reflect",
+            "type": "verb",
+            "meaning": "To show, express, or bounce back an image or light.",
+            "example": "Mirrors reflect your appearance when you look at them."
+          },
+          {
+            "word": "relevant",
+            "type": "adj",
+            "meaning": "Directly connected and important to the topic.",
+            "example": "Please keep your questions relevant to today's lesson."
+          },
+          {
+            "word": "specifically",
+            "type": "adv",
+            "meaning": "In a clear, exact, and detailed manner.",
+            "example": "This gift was specifically bought for your birthday."
+          },
+          {
+            "word": "suggest",
+            "type": "verb",
+            "meaning": "To offer an idea or plan for someone to think about.",
+            "example": "I suggest we take a quick break before starting work."
+          },
+          {
+            "word": "support",
+            "type": "verb / noun",
+            "meaning": "To help, encourage, or agree with someone or something.",
+            "example": "Friends always support each other during hard times."
+          },
+          {
+            "word": "surrounding",
+            "type": "adj",
+            "meaning": "Located all around a central place or object.",
+            "example": "The trees in the surrounding forest were very tall."
+          }
+        ]
+      },
+      {
+        "title": "Unit 5: Challenges, Goals & Success",
+        "words": [
+          {
+            "word": "bravely",
+            "type": "adv",
+            "meaning": "Doing something with courage without showing fear.",
+            "example": "The firefighter bravely entered the burning house."
+          },
+          {
+            "word": "conquer",
+            "type": "verb",
+            "meaning": "To defeat, overcome, or get total control over something.",
+            "example": "With practice, you can conquer your fear of speaking."
+          },
+          {
+            "word": "determined",
+            "type": "adj",
+            "meaning": "Having a firm decision to do something no matter what.",
+            "example": "She was determined to pass her final driving test."
+          },
+          {
+            "word": "distinctive",
+            "type": "adj",
+            "meaning": "Easy to recognize because it is unique and special.",
+            "example": "Zebras have a distinctive pattern of black and white stripes."
+          },
+          {
+            "word": "earn",
+            "type": "verb",
+            "meaning": "To get money or rewards as a result of working hard.",
+            "example": "He works at a shop to earn money for college."
+          },
+          {
+            "word": "element",
+            "type": "noun",
+            "meaning": "A essential basic part or feature of a larger whole.",
+            "example": "Trust is an essential element of any friendship."
+          },
+          {
+            "word": "emerge",
+            "type": "verb",
+            "meaning": "To come out into view; to appear or become known.",
+            "example": "The sun began to emerge from behind the dark clouds."
+          },
+          {
+            "word": "enable",
+            "type": "verb",
+            "meaning": "To make it possible for someone to do something.",
+            "example": "Good wifi will enable students to study online easily."
+          },
+          {
+            "word": "goal",
+            "type": "noun",
+            "meaning": "Something you aim for and hope to achieve.",
+            "example": "My main goal this year is to learn how to swim."
+          },
+          {
+            "word": "perceive",
+            "type": "verb",
+            "meaning": "To notice, see, or understand something in a certain way.",
+            "example": "Different people perceive art in different ways."
+          },
+          {
+            "word": "poverty",
+            "type": "noun",
+            "meaning": "The state of being extremely poor without basic needs.",
+            "example": "The charity aims to help families living in deep poverty."
+          },
+          {
+            "word": "predict",
+            "type": "verb",
+            "meaning": "To say or guess what will happen in the future.",
+            "example": "Weather reporters try to predict if it will rain tomorrow."
+          },
+          {
+            "word": "role",
+            "type": "noun",
+            "meaning": "The position, duty, or part someone plays in a situation.",
+            "example": "Teachers play an important role in educating children."
+          },
+          {
+            "word": "set apart",
+            "type": "verb phrase",
+            "meaning": "To make someone or something clearly different or unique.",
+            "example": "Her creativity sets her apart from other writers."
+          },
+          {
+            "word": "significant",
+            "type": "adj",
+            "meaning": "Important, large, or noticeable enough to matter.",
+            "example": "There has been a significant improvement in your English."
+          },
+          {
+            "word": "threat",
+            "type": "noun",
+            "meaning": "A danger or possibility that something bad will happen.",
+            "example": "Pollution is a dangerous threat to ocean animals."
+          },
+          {
+            "word": "trait",
+            "type": "noun",
+            "meaning": "A quality or characteristic of a person's personality.",
+            "example": "Kindness is a wonderful personal trait to have."
+          },
+          {
+            "word": "traumatic",
+            "type": "adj",
+            "meaning": "Extremely shocking, scary, and causing lasting pain.",
+            "example": "Car accidents can be a traumatic experience for anyone."
+          },
+          {
+            "word": "ultimate",
+            "type": "adj",
+            "meaning": "Final, highest, or most important end point.",
+            "example": "Winning the championship was their ultimate goal."
+          }
+        ]
+      },
+      {
+        "title": "Unit 6: Thinking, Ideas & Logic",
+        "words": [
+          {
+            "word": "according to",
+            "type": "phrase",
+            "meaning": "As stated or said by a person, book, or source.",
+            "example": "According to the forecast, tomorrow will be sunny."
+          },
+          {
+            "word": "arrogant",
+            "type": "adj",
+            "meaning": "Thinking you are much better or smarter than others.",
+            "example": "Nobody likes working with an arrogant person."
+          },
+          {
+            "word": "come up with",
+            "type": "verb phrase",
+            "meaning": "To create, invent, or think of a new idea or plan.",
+            "example": "Can you come up with a solution to this problem?"
+          },
+          {
+            "word": "complex",
+            "type": "adj",
+            "meaning": "Having many difficult or confusing connected parts.",
+            "example": "This math problem is too complex for me to solve easily."
+          },
+          {
+            "word": "deal with",
+            "type": "verb phrase",
+            "meaning": "To take action to handle, solve, or manage a task.",
+            "example": "How do you deal with stress when you feel tired?"
+          },
+          {
+            "word": "efficient",
+            "type": "adj",
+            "meaning": "Working quickly and well without wasting any time.",
+            "example": "An efficient worker completes tasks without mistakes."
+          },
+          {
+            "word": "experiment",
+            "type": "noun / verb",
+            "meaning": "A scientific test done to learn or prove something.",
+            "example": "Students did an experiment in the chemistry lab."
+          },
+          {
+            "word": "function",
+            "type": "noun / verb",
+            "meaning": "The special purpose, job, or work that something does.",
+            "example": "The main function of a heart is to pump blood."
+          },
+          {
+            "word": "have a gift",
+            "type": "phrase",
+            "meaning": "To possess a natural talent or special ability.",
+            "example": "She has a gift for playing the piano beautifully."
+          },
+          {
+            "word": "impatient",
+            "type": "adj",
+            "meaning": "Not willing to wait calm; easily annoyed by delays.",
+            "example": "Don't get impatient; the bus will arrive very soon."
+          },
+          {
+            "word": "make sense",
+            "type": "phrase",
+            "meaning": "To be clear, logical, and easy to understand.",
+            "example": "His explanation made a lot of sense to everyone."
+          },
+          {
+            "word": "move on",
+            "type": "verb phrase",
+            "meaning": "To stop doing one thing and start a new activity.",
+            "example": "Let's finish this topic and move on to the next unit."
+          },
+          {
+            "word": "pace",
+            "type": "noun",
+            "meaning": "The speed at which someone walks, runs, or moves.",
+            "example": "He walked at a fast pace to reach the station on time."
+          },
+          {
+            "word": "proof",
+            "type": "noun",
+            "meaning": "Facts, evidence, or information showing truth.",
+            "example": "Do you have proof that your answer is correct?"
+          },
+          {
+            "word": "rely on",
+            "type": "verb phrase",
+            "meaning": "To depend on or trust someone/something for help.",
+            "example": "You can always rely on your best friends."
+          },
+          {
+            "word": "revolutionary",
+            "type": "adj",
+            "meaning": "Involving a sudden, total, and complete positive change.",
+            "example": "The internet was a revolutionary invention."
+          },
+          {
+            "word": "subject",
+            "type": "noun",
+            "meaning": "The main topic or thing being discussed or studied.",
+            "example": "English is my favorite school subject."
+          },
+          {
+            "word": "view",
+            "type": "noun / verb",
+            "meaning": "An opinion, belief, or way of looking at something.",
+            "example": "In my view, reading books is the best pastime."
+          }
+        ]
+      },
+      {
+        "title": "Unit 7: Society, Giving & Action",
+        "words": [
+          {
+            "word": "address",
+            "type": "verb",
+            "meaning": "To deal with or direct attention to a problem.",
+            "example": "We must address the issue of litter in our school yard."
+          },
+          {
+            "word": "aspect",
+            "type": "noun",
+            "meaning": "One single part, feature, or side of a situation.",
+            "example": "Grammar is just one aspect of learning a language."
+          },
+          {
+            "word": "concerned",
+            "type": "adj",
+            "meaning": "Worried, anxious, or caring about a situation.",
+            "example": "Parents are often concerned about their kids' safety."
+          },
+          {
+            "word": "desire",
+            "type": "noun / verb",
+            "meaning": "A strong wish or wanting to have or do something.",
+            "example": "She has a strong desire to travel around the world."
+          },
+          {
+            "word": "distribute",
+            "type": "verb",
+            "meaning": "To hand out or share things among a group of people.",
+            "example": "Volunteers will distribute food to families in need."
+          },
+          {
+            "word": "estimate",
+            "type": "verb / noun",
+            "meaning": "To make a careful guess about size, cost, or number.",
+            "example": "I estimate that the journey will take two hours."
+          },
+          {
+            "word": "firsthand",
+            "type": "adj / adv",
+            "meaning": "Gained by direct personal experience, not from stories.",
+            "example": "She gained firsthand experience by working in a hospital."
+          },
+          {
+            "word": "focus",
+            "type": "verb / noun",
+            "meaning": "To give all your attention to one main thing.",
+            "example": "Please focus on your reading during quiet study time."
+          },
+          {
+            "word": "give back",
+            "type": "verb phrase",
+            "meaning": "To return help, money, or support to your community.",
+            "example": "Successful people often give back by donating money."
+          },
+          {
+            "word": "inspired",
+            "type": "adj",
+            "meaning": "Filled with enthusiasm and creative ideas to act.",
+            "example": "Listening to the speech made me feel very inspired."
+          },
+          {
+            "word": "massive",
+            "type": "adj",
+            "meaning": "Extremely large, heavy, or powerful.",
+            "example": "They saw a massive whale swimming near the ship."
+          },
+          {
+            "word": "model",
+            "type": "noun",
+            "meaning": "A good example that people should try to copy.",
+            "example": "He is a role model for young athletes everywhere."
+          },
+          {
+            "word": "movement",
+            "type": "noun",
+            "meaning": "A group of people working together for a shared cause.",
+            "example": "The environmental movement helps protect trees."
+          },
+          {
+            "word": "opportunity",
+            "type": "noun",
+            "meaning": "A good chance or situation to do something positive.",
+            "example": "Studying abroad is a great opportunity to learn."
+          },
+          {
+            "word": "overall",
+            "type": "adj / adv",
+            "meaning": "In general; taking everything into consideration.",
+            "example": "The exam was hard, but overall I think I passed."
+          },
+          {
+            "word": "prospect",
+            "type": "noun",
+            "meaning": "The possibility or likelihood of something happening.",
+            "example": "The prospect of getting a new job excited him."
+          },
+          {
+            "word": "reusable",
+            "type": "adj",
+            "meaning": "Able to be used again multiple times instead of thrown out.",
+            "example": "Bring a reusable water bottle to reduce plastic waste."
+          },
+          {
+            "word": "seek",
+            "type": "verb",
+            "meaning": "To try to find, search for, or ask for something.",
+            "example": "If you feel sick, you should seek medical help."
+          },
+          {
+            "word": "signify",
+            "type": "verb",
+            "meaning": "To be a sign of or mean something important.",
+            "example": "A white flag is used to signify peace and safety."
+          }
+        ]
+      },
+      {
+        "title": "Unit 8: Business, Success & Growth",
+        "words": [
+          {
+            "word": "aggressively",
+            "type": "adv",
+            "meaning": "In a determined, forceful, or energetic manner.",
+            "example": "The company aggressively advertised its new product line."
+          },
+          {
+            "word": "assured",
+            "type": "adj",
+            "meaning": "Confident, certain, and sure of success or skill.",
+            "example": "She gave an assured presentation in front of the board."
+          },
+          {
+            "word": "dedication",
+            "type": "noun",
+            "meaning": "Hard work, loyalty, and devotion given to a duty.",
+            "example": "Her dedication to practicing piano led to great skill."
+          },
+          {
+            "word": "demanding",
+            "type": "adj",
+            "meaning": "Requiring a lot of effort, skill, time, or hard work.",
+            "example": "Working as a doctor is a very demanding job."
+          },
+          {
+            "word": "dependable",
+            "type": "adj",
+            "meaning": "Trustworthy and reliable; always doing what is needed.",
+            "example": "A dependable car will not break down on long drives."
+          },
+          {
+            "word": "due to",
+            "type": "preposition",
+            "meaning": "Because of a specific cause or reason.",
+            "example": "The match was canceled due to heavy rain."
+          },
+          {
+            "word": "exception",
+            "type": "noun",
+            "meaning": "Someone or something that does not follow the general rule.",
+            "example": "Everyone must attend, with no exception."
+          },
+          {
+            "word": "expansion",
+            "type": "noun",
+            "meaning": "The process of becoming larger or growing in size.",
+            "example": "The company plans a big expansion into European markets."
+          },
+          {
+            "word": "image",
+            "type": "noun",
+            "meaning": "The general picture or impression people have of something.",
+            "example": "The brand wants to build a positive public image."
+          },
+          {
+            "word": "invest",
+            "type": "verb",
+            "meaning": "To put money, time, or effort into something for future profit.",
+            "example": "It is wise to invest time in learning new skills."
+          },
+          {
+            "word": "logo",
+            "type": "noun",
+            "meaning": "A special symbol or design that represents a brand.",
+            "example": "Apple's logo is recognizable all across the world."
+          },
+          {
+            "word": "market",
+            "type": "noun / verb",
+            "meaning": "A system, place, or group of buyers for goods and services.",
+            "example": "There is a huge global market for smartphones."
+          },
+          {
+            "word": "motion",
+            "type": "noun",
+            "meaning": "The act or process of moving or changing place.",
+            "example": "The rocking motion of the boat made him feel sleepy."
+          },
+          {
+            "word": "profit",
+            "type": "noun",
+            "meaning": "The extra money made after paying all business costs.",
+            "example": "The shop earned a good profit during the holiday season."
+          },
+          {
+            "word": "recover",
+            "type": "verb",
+            "meaning": "To get back to health, happiness, or a good state again.",
+            "example": "It takes a few days to recover from a bad flu."
+          },
+          {
+            "word": "sign",
+            "type": "noun / verb",
+            "meaning": "A mark, gesture, or object showing information.",
+            "example": "The red stop sign tells drivers to halt their vehicles."
+          },
+          {
+            "word": "sponsor",
+            "type": "verb / noun",
+            "meaning": "To support a person or event by providing money.",
+            "example": "Nike agrees to sponsor many top athletes worldwide."
+          },
+          {
+            "word": "stability",
+            "type": "noun",
+            "meaning": "The state of being calm, steady, and not changing easily.",
+            "example": "Financial stability gives peace of mind to families."
+          },
+          {
+            "word": "trend",
+            "type": "noun",
+            "meaning": "A general direction in which something is changing or developing.",
+            "example": "Wearing vintage clothes is a popular fashion trend now."
+          }
+        ]
+      }
+    ]
+  }
+] /* BOOKS_DATA_END */;
+
+  let books = [];
+  let isAdmin = sessionStorage.getItem("wd_admin") === "1";
+  let view = { level: "home" };
+
+  function escapeHtml(s){
+    return String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  async function loadBooks(){
+    const local = JSON.parse(localStorage.getItem("wd_books_working") || "null");
+    books = local || JSON.parse(JSON.stringify(BOOKS_DATA));
+    render();
+  }
+
+  function saveWorking(){
+    localStorage.setItem("wd_books_working", JSON.stringify(books));
+  }
+
+  async function reloadFromServer(){
+    localStorage.removeItem("wd_books_working");
+    location.reload();
+  }
+
+  function goHome(){ view = { level: "home" }; render(); }
+  function openBook(bookId){ view = { level: "book", bookId }; render(); }
+  function openUnit(bookId, unitIndex){ view = { level: "unit", bookId, unitIndex }; render(); }
+  function findBook(id){ return books.find(b => b.id === id); }
+
+  function render(){
+    const crumbs = document.getElementById("crumbs");
+    const titleEl = document.getElementById("viewTitle");
+    const content = document.getElementById("content");
+
+    if(view.level === "home"){
+      crumbs.innerHTML = "";
+      titleEl.textContent = "Choose a book";
+      if(books.length === 0){
+        content.innerHTML = '<div class="empty">No books yet — add one from the admin panel.</div>';
+      } else {
+        content.innerHTML = `<div class="tiles">${books.map(b => {
+          const unitCount = b.units.length;
+          const wordCount = b.units.reduce((n,u) => n + u.words.length, 0);
+          return `<button class="tile" onclick="openBook('${b.id}')">
+            <div class="t">${escapeHtml(b.title)}</div>
+            <div class="m">${unitCount} unit${unitCount===1?"":"s"} · ${wordCount} words</div>
+          </button>`;
+        }).join("")}</div>`;
+      }
+      renderAdminPickers();
+      return;
+    }
+
+    const book = findBook(view.bookId);
+    if(!book){ goHome(); return; }
+
+    if(view.level === "book"){
+      crumbs.innerHTML = `<button onclick="goHome()">← All books</button>`;
+      titleEl.textContent = book.title;
+      if(book.units.length === 0){
+        content.innerHTML = '<div class="empty">No units yet — add one from the admin panel.</div>';
+      } else {
+        content.innerHTML = `<div class="tiles">${book.units.map((u,i) => `
+          <button class="tile" onclick="openUnit('${book.id}',${i})">
+            <div class="t">${escapeHtml(u.title)}</div>
+            <div class="m">${u.words.length} word${u.words.length===1?"":"s"}</div>
+          </button>
+        `).join("")}</div>`;
+      }
+      renderAdminPickers();
+      return;
+    }
+
+    if(view.level === "unit"){
+      const unit = book.units[view.unitIndex];
+      if(!unit){ openBook(book.id); return; }
+      crumbs.innerHTML = `<button onclick="goHome()">All books</button> / <button onclick="openBook('${book.id}')">${escapeHtml(book.title)}</button>`;
+      titleEl.textContent = unit.title;
+      if(unit.words.length === 0){
+        content.innerHTML = '<div class="empty">No words in this unit yet.</div>';
+      } else {
+        content.innerHTML = `<div class="deck">${unit.words.map((w,i) => `
+          <div class="cardw">
+            ${isAdmin ? `<button class="rm" onclick="removeWord('${book.id}', ${view.unitIndex}, ${i})">remove</button>` : ""}
+            <div class="w">${escapeHtml(w.word)}<span class="type">${escapeHtml(w.type||"")}</span></div>
+            <div class="m">${escapeHtml(w.meaning)}</div>${w.example ? `<div class="ex">"${escapeHtml(w.example)}"</div>` : ""}
+          </div>
+        `).join("")}</div>`;
+      }
+      renderAdminPickers();
+    }
+  }
+
+  function renderAdminPickers(){
+    const bookSel = document.getElementById("pickBook");
+    const unitSel = document.getElementById("pickUnit");
+    if(!bookSel) return;
+    const prevBook = bookSel.value;
+    bookSel.innerHTML = books.map(b => `<option value="${b.id}">${escapeHtml(b.title)}</option>`).join("");
+    if(books.some(b => b.id === prevBook)) bookSel.value = prevBook;
+    populateUnitPicker();
+  }
+
+  function populateUnitPicker(){
+    const bookSel = document.getElementById("pickBook");
+    const unitSel = document.getElementById("pickUnit");
+    const book = findBook(bookSel.value) || books[0];
+    if(!book){ unitSel.innerHTML = ""; return; }
+    unitSel.innerHTML = book.units.map((u,i) => `<option value="${i}">${escapeHtml(u.title)}</option>`).join("");
+  }
+
+  document.addEventListener("change", (e) => {
+    if(e.target && e.target.id === "pickBook") populateUnitPicker();
+  });
+
+  function createUnit(){
+    const bookSel = document.getElementById("pickBook");
+    const title = document.getElementById("newUnitTitle").value.trim();
+    if(!title){ alert("Type a title for the new unit."); return; }
+    const book = findBook(bookSel.value) || books[0];
+    if(!book) return;
+    book.units.push({ title, words: [] });
+    document.getElementById("newUnitTitle").value = "";
+    saveWorking();
+    renderAdminPickers();
+    document.getElementById("pickUnit").value = String(book.units.length - 1);
+    render();
+  }
+
+  function addWord(){
+    const bookSel = document.getElementById("pickBook");
+    const unitSel = document.getElementById("pickUnit");
+    const w = document.getElementById("newWord").value.trim();
+    const t = document.getElementById("newType").value.trim();
+    const m = document.getElementById("newMeaning").value.trim();
+    const ex = document.getElementById("newExample").value.trim();
+    if(!w || !m){ alert("Add at least a word and a meaning (use Auto-fill if unsure)."); return; }
+    const book = findBook(bookSel.value) || books[0];
+    if(!book || book.units.length === 0){ alert("Create a unit first."); return; }
+    const unit = book.units[Number(unitSel.value) || 0];
+    unit.words.push({ word: w, type: t, meaning: m, example: ex });
+    document.getElementById("newWord").value = "";
+    document.getElementById("newType").value = "";
+    document.getElementById("newMeaning").value = "";
+    document.getElementById("newExample").value = "";
+    saveWorking();
+    render();
+  }
+
+  function removeWord(bookId, unitIndex, wordIndex){
+    const book = findBook(bookId);
+    if(!book) return;
+    book.units[unitIndex].words.splice(wordIndex, 1);
+    saveWorking();
+    render();
+  }
+
+  function quickAdd(word, meaning){
+    const bookSel = document.getElementById("pickBook");
+    const unitSel = document.getElementById("pickUnit");
+    const book = findBook(bookSel && bookSel.value) || books[0];
+    if(!book || book.units.length === 0){ alert("Create a unit first, then use the Add to class deck button again."); return; }
+    const unit = book.units[Number(unitSel.value) || 0];
+    if(unit.words.some(x => x.word.toLowerCase() === word.toLowerCase())){ alert("Already in this unit."); return; }
+    unit.words.push({ word, type: "", meaning, example: "" });
+    saveWorking();
+    render();
+  }
+
+  function exportDeck(){
+    const blob = new Blob([JSON.stringify(books, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "words.json";
+    a.click();
+  }
+
+  async function autoFillMeaning(){
+    const w = document.getElementById("newWord").value.trim();
+    if(!w) return;
+    const def = await lookupWord(w);
+    if(def && !def.notFound && !def.error){
+      document.getElementById("newMeaning").value = def.meaning;
+      if(def.pos) document.getElementById("newType").value = def.pos;
+      if(def.example) document.getElementById("newExample").value = def.example;
+    }
+  }
+
+  async function lookupWord(word){
+    try{
+      const res = await fetch("https://api.dictionaryapi.dev/api/v2/entries/en/" + encodeURIComponent(word));
+      if(res.status === 404) return { notFound: true };
+      if(!res.ok) return { error: "Dictionary service returned an error (" + res.status + ")." };
+      const data = await res.json();
+      const entry = data[0];
+      const meaningBlock = entry.meanings && entry.meanings[0];
+      const def = meaningBlock && meaningBlock.definitions && meaningBlock.definitions[0];
+      if(!def) return { notFound: true };
+      return {
+        word: entry.word, pos: meaningBlock.partOfSpeech,
+        meaning: def.definition, example: def.example || null
+      };
+    }catch(e){
+      return { error: "Couldn't reach the dictionary service (" + e.message + "). If you're opening this file directly from disk instead of through a live site, try it hosted on GitHub Pages instead." };
+    }
+  }
+
+  function loadAiSettings(){
+    const s = JSON.parse(localStorage.getItem("wd_ai_settings") || "null");
+    document.getElementById("aiKey").value = (s && s.key) || "";
+  }
+  function saveAiSettings(){
+    const key = document.getElementById("aiKey").value.trim();
+    if(!key){
+      localStorage.removeItem("wd_ai_settings");
+      document.getElementById("aiStatus").textContent = "Cleared — Explain will use the dictionary again.";
+      return;
+    }
+    localStorage.setItem("wd_ai_settings", JSON.stringify({ key }));
+    document.getElementById("aiStatus").textContent = "Saved in this browser. Explain will now use AI.";
+  }
+
+  async function aiExplain(word){
+    const s = JSON.parse(localStorage.getItem("wd_ai_settings") || "null");
+    if(!s || !s.key) return null;
+    try{
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": "Bearer " + s.key },
+        body: JSON.stringify({
+          model: "openai/gpt-oss-20b",
+          messages: [
+            { role: "system", content: "You are a friendly, patient English tutor helping foundation-year university students still learning English. Given one word, explain its meaning in very simple English, then give one short example sentence. Keep the whole reply under 60 words, plain text, no markdown." },
+            { role: "user", content: "Explain the word: " + word }
+          ],
+          temperature: 0.4
+        })
+      });
+      if(!res.ok){
+        const err = await res.json().catch(() => ({}));
+        return { error: (err.error && err.error.message) || ("AI service error " + res.status) };
+      }
+      const data = await res.json();
+      const text = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+      if(!text) return { error: "AI returned an empty response." };
+      return { ai: true, text: text.trim() };
+    }catch(e){
+      return { error: "Couldn't reach the AI service (" + e.message + ")." };
+    }
+  }
+
+  async function explainWord(){
+    const input = document.getElementById("explainInput");
+    const w = input.value.trim();
+    const box = document.getElementById("explainResult");
+    if(!w) return;
+    box.innerHTML = "Looking it up…";
+
+    const aiResult = await aiExplain(w);
+    if(aiResult && aiResult.ai){
+      box.innerHTML = `
+        <div class="word">${escapeHtml(w)}</div>
+        <div class="pos">AI explanation</div>
+        <div>${escapeHtml(aiResult.text)}</div>
+        ${isAdmin ? `<button class="addBtn" onclick="quickAdd('${escapeHtml(w).replace(/'/g,"\\'")}','${escapeHtml(aiResult.text).replace(/'/g,"\\'")}')">Add to class deck</button>` : ""}
+      `;
+      return;
+    }
+    if(aiResult && aiResult.error){
+      box.innerHTML = `AI lookup failed (${escapeHtml(aiResult.error)}). Trying the dictionary instead…`;
+    }
+
+    const def = await lookupWord(w);
+    if(!def || def.notFound){
+      box.innerHTML = `Couldn't find "${escapeHtml(w)}" in the dictionary. Check the spelling — some slang or made-up words just aren't listed.`;
+      return;
+    }
+    if(def.error){
+      box.innerHTML = escapeHtml(def.error);
+      return;
+    }
+    box.innerHTML = `
+      <div class="word">${escapeHtml(def.word)}</div>
+      <div class="pos">${escapeHtml(def.pos || "")}</div>
+      <div>${escapeHtml(def.meaning)}</div>
+      ${def.example ? `<div class="example">"${escapeHtml(def.example)}"</div>` : ""}
+      ${isAdmin ? `<button class="addBtn" onclick="quickAdd('${escapeHtml(def.word).replace(/'/g,"\\'")}','${escapeHtml(def.meaning).replace(/'/g,"\\'")}')">Add to class deck</button>` : ""}
+    `;
+  }
+
+  function detectRepoInfo(){
+    try{
+      const host = location.hostname;
+      if(host.endsWith(".github.io")){
+        const owner = host.split(".")[0];
+        const parts = location.pathname.split("/").filter(Boolean);
+        const repo = parts.length > 0 ? parts[0] : (owner + ".github.io");
+        return { owner, repo };
+      }
+    }catch(e){}
+    return null;
+  }
+
+  function loadGhSettings(){
+    const s = JSON.parse(localStorage.getItem("wd_gh_settings") || "null");
+    const detected = detectRepoInfo();
+    document.getElementById("ghOwner").value = (s && s.owner) || (detected && detected.owner) || "";
+    document.getElementById("ghRepo").value = (s && s.repo) || (detected && detected.repo) || "";
+    document.getElementById("ghBranch").value = (s && s.branch) || "";
+    document.getElementById("ghFile").value = (s && s.file) || "";
+    document.getElementById("ghToken").value = (s && s.token) || "";
+  }
+
+  function saveGhSettings(){
+    const token = document.getElementById("ghToken").value.trim();
+    if(!token){ document.getElementById("ghStatus").textContent = "Paste your token first."; return; }
+    const detected = detectRepoInfo();
+    const s = {
+      owner: document.getElementById("ghOwner").value.trim() || (detected && detected.owner) || "",
+      repo: document.getElementById("ghRepo").value.trim() || (detected && detected.repo) || "",
+      branch: document.getElementById("ghBranch").value.trim() || "main",
+      file: document.getElementById("ghFile").value.trim() || "vocab-builder.html",
+      token
+    };
+    if(!s.owner || !s.repo){
+      document.getElementById("ghStatus").textContent = "Couldn't auto-detect your repo — fill in username and repo name under Advanced.";
+      return;
+    }
+    localStorage.setItem("wd_gh_settings", JSON.stringify(s));
+    document.getElementById("ghStatus").textContent = "Saved. You won't need to type this again on this browser.";
+  }
+
+  function clearGhSettings(){
+    localStorage.removeItem("wd_gh_settings");
+    document.getElementById("ghToken").value = "";
+    loadGhSettings();
+    document.getElementById("ghStatus").textContent = "Token forgotten.";
+  }
+
+  async function publishToGithub(){
+    const s = JSON.parse(localStorage.getItem("wd_gh_settings") || "null");
+    const statusEl = document.getElementById("ghStatus");
+    if(!s || !s.owner || !s.repo || !s.token){
+      statusEl.textContent = "Save your GitHub settings first (above).";
+      return;
+    }
+    const branch = s.branch || "main";
+    const file = s.file || "vocab-builder.html";
+    const api = `https://api.github.com/repos/${s.owner}/${s.repo}/contents/${encodeURIComponent(file)}`;
+    statusEl.textContent = "Publishing…";
+    try{
+      const getRes = await fetch(`${api}?ref=${encodeURIComponent(branch)}`, {
+        headers: { Authorization: `token ${s.token}`, Accept: "application/vnd.github+json" }
+      });
+      if(!getRes.ok){
+        const err = await getRes.json().catch(() => ({}));
+        throw new Error((err.message || ("GitHub error " + getRes.status)) + ` — check the file name (tried "${file}") under Advanced.`);
+      }
+      const getData = await getRes.json();
+      const sha = getData.sha;
+      const currentSource = decodeURIComponent(escape(atob(getData.content.replace(/\n/g, ""))));
+
+      const marker = /\/\* BOOKS_DATA_START \*\/[\s\S]*?\/\* BOOKS_DATA_END \*\//;
+      if(!marker.test(currentSource)){
+        throw new Error("Couldn't find the word-data section in that file — is it the right file name?");
+      }
+      const newDataBlock = "/* BOOKS_DATA_START */ " + JSON.stringify(books, null, 2) + " /* BOOKS_DATA_END */";
+      const newSource = currentSource.replace(marker, newDataBlock);
+
+      const b64 = btoa(unescape(encodeURIComponent(newSource)));
+      const putRes = await fetch(api, {
+        method: "PUT",
+        headers: { Authorization: `token ${s.token}`, Accept: "application/vnd.github+json" },
+        body: JSON.stringify({ message: "Update word deck via Word Deck admin", content: b64, sha, branch })
+      });
+      if(!putRes.ok){
+        const err = await putRes.json().catch(() => ({}));
+        throw new Error(err.message || ("GitHub error " + putRes.status));
+      }
+
+      // Clear local working copy so browser syncs cleanly with live data
+      localStorage.removeItem("wd_books_working");
+
+      statusEl.textContent = "Published! Live for everyone within a minute or two.";
+    }catch(e){
+      statusEl.textContent = "Failed: " + e.message;
+    }
+  }
+
+  function openLogin(){ document.getElementById("loginOverlay").style.display = "flex"; document.getElementById("loginError").textContent=""; }
+  function closeLogin(){ document.getElementById("loginOverlay").style.display = "none"; }
+
+  function tryLogin(){
+    const u = document.getElementById("loginUser").value.trim();
+    const p = document.getElementById("loginPass").value.trim();
+    if(u === ADMIN_USER && p === ADMIN_PASS){
+      isAdmin = true;
+      sessionStorage.setItem("wd_admin", "1");
+      closeLogin();
+      document.getElementById("adminPanel").style.display = "block";
+      document.getElementById("adminToggle").textContent = "Admin ✓";
+      loadGhSettings();
+      render();
+    } else {
+      document.getElementById("loginError").textContent = "Wrong username or password.";
+    }
+  }
+
+  function logout(){
+    isAdmin = false;
+    sessionStorage.removeItem("wd_admin");
+    document.getElementById("adminPanel").style.display = "none";
+    document.getElementById("adminToggle").textContent = "Admin";
+    render();
+  }
+
+  document.getElementById("adminToggle").addEventListener("click", () => {
+    if(isAdmin){ logout(); } else { openLogin(); }
+  });
+
+  if(isAdmin){
+    document.getElementById("adminPanel").style.display = "block";
+    document.getElementById("adminToggle").textContent = "Admin ✓";
+    loadGhSettings();
+  }
+
+  loadAiSettings();
+  loadBooks();
+</script>
+
+</body>
+</html>
